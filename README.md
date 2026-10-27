@@ -2,10 +2,6 @@
 
 A terminal client for [jiin.party](https://jiin.party).
 
-Global chat, direct messages, group chats, forums, announcements and the image-metadata
-tool, all from the terminal. Pictures show inline — real pixels in Kitty, block
-characters elsewhere. Colours follow your Hyprland/Saber theme.
-
 ## Running
 
 Needs `python3`. The launcher sets up a virtualenv on first run.
@@ -33,9 +29,4 @@ Press `F1` in the app for the full list. The basics:
 - In chat: type to send, `/img <path>` or drag a file in to send a picture, `i` on a
   message opens a picture full size
 
-Voice calls, the globe and the music player need a browser.
-
-## Image Data
-
-The Image Data tab reads a photo's metadata (GPS, camera serials, timestamps, names)
-and can save a stripped copy. It runs entirely on your machine.
+Voice calls, the globe and the music player are not yet implemented

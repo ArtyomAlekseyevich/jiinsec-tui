@@ -106,7 +106,7 @@ class Api:
         return r if isinstance(r, dict) else {"error": "Unexpected answer"}
 
 
-# ====================================================================== login
+# login
 
 class LoginScreen(Screen):
     BINDINGS = [Binding("ctrl+q", "app.quit", "Quit")]
@@ -164,7 +164,7 @@ class LoginScreen(Screen):
         m.update(Text(t, style=f"{C.err}" if err else f"{C.ok}"))
         m.display = bool(t)
 
-    # ---- step 1: username + password
+    # step 1: username + password
     @on(Input.Submitted, "#lu")
     def _u(self) -> None:
         self.query_one("#lp", Input).focus()
@@ -195,7 +195,7 @@ class LoginScreen(Screen):
         self.query_one("#lp", Input).value = ""
         await self.app.after_login()
 
-    # ---- step 2 (only for unfinished accounts): emailed code
+    # step 2 (only for unfinished accounts): emailed code
     def show_verify(self, v: dict, note: str = "") -> None:
         self.pid = v.get("pid")
         t = Text()
@@ -245,7 +245,7 @@ class LoginScreen(Screen):
         self.query_one("#lsw", ContentSwitcher).current = "lf"
         self.msg("", False)
 
-    # ---- terms gate
+    # terms gate
     def show_tos(self) -> None:
         self.query_one("#tgintro", Static).update(Text.assemble(
             "Welcome back, ", (self.app.me.get("username", ""), "bold"),
@@ -275,7 +275,7 @@ class LoginScreen(Screen):
         self.app.logout()
 
 
-# ====================================================================== chat
+# chat
 
 class ChatSuggester(Suggester):
     # completes @names and :emoji: at the end of the input
@@ -348,7 +348,7 @@ class ChatPane(Widget):
         self.poll_loop()
         self.typing_loop()
 
-    # ---------- polling ----------
+    # polling
     @work(group="chatpoll", exclusive=True)
     async def poll_loop(self) -> None:
         while True:
@@ -502,7 +502,7 @@ class ChatPane(Widget):
             return with_avatar(av, t, 10, f"on {C.ping_bg}" if m.get("ping") else None)
         return indent(t, "▌ " if m.get("ping") else "  ", f"{C.warn}")
 
-    # ---------- composer state ----------
+    # composer state
     def show_state(self) -> None:
         inp = self.query_one("#cin", Input)
         if self.mute:
@@ -534,7 +534,7 @@ class ChatPane(Widget):
     def action_cancel_reply(self) -> None:
         self.set_reply(None)
 
-    # ---------- typing ----------
+    # typing
     @work(group="typing", exclusive=True)
     async def typing_loop(self) -> None:
         while True:
@@ -574,7 +574,7 @@ class ChatPane(Widget):
             self.ty_timer.stop()
         self.ty_timer = self.set_timer(2.5, self._ty_stop)
 
-    # ---------- sending ----------
+    # sending
     @on(Input.Submitted, "#cin")
     @on(Button.Pressed, "#csend")
     def _send(self) -> None:
@@ -664,7 +664,7 @@ class ChatPane(Widget):
         self.note("")
         self.send(body, "")
 
-    # ---------- message actions ----------
+    # message actions
     def cur(self) -> dict | None:
         o = self.query_one("#chatlog", OptionList).highlighted_option
         if not o:
@@ -808,7 +808,7 @@ def prepare_image(p: Path) -> tuple[bytes, str]:
     return data, ctype
 
 
-# ====================================================================== news
+# news
 
 class NewsPane(Widget):
     BINDINGS = [Binding("ctrl+r", "load", "Refresh")]
@@ -855,7 +855,7 @@ class NewsPane(Widget):
         body.update(t)
 
 
-# ====================================================================== profile
+# profile
 
 class ProfileScreen(ModalScreen[None]):
     BINDINGS = [Binding("escape,q", "dismiss(None)", "Close")]
@@ -1003,7 +1003,7 @@ class ProfileScreen(ModalScreen[None]):
         self.load()
 
 
-# ====================================================================== main screen
+# main screen
 
 TABS = [("chat", "Chat"), ("dms", "Messages"), ("forums", "Forums"), ("news", "News"), ("img", "Image Data")]
 
@@ -1121,7 +1121,7 @@ class MainScreen(Screen):
         self.app.notify("Pictures shown in messages" if pics.enabled else "Pictures hidden - press i on a message to view one",
                         timeout=3)
 
-    # ---------- members ----------
+    # members
     @work(group="members", exclusive=True)
     async def members_loop(self) -> None:
         sig = None
@@ -1219,7 +1219,7 @@ class MainScreen(Screen):
         if (e.option.id or "").startswith("u"):
             self.app.open_profile(int(e.option.id[1:]))
 
-    # ---------- me ----------
+    # me
     @work(group="me", exclusive=True)
     async def me_loop(self) -> None:
         while True:
@@ -1237,7 +1237,7 @@ class MainScreen(Screen):
                 self.app.signed_out()
                 return
 
-    # ---------- social long-poll ----------
+    # social long-poll
     @work(group="social", exclusive=True)
     async def social_loop(self) -> None:
         await self.app.load_social()
@@ -1259,7 +1259,7 @@ class MainScreen(Screen):
                 await asyncio.sleep(2)   # empty reply came back instantly, avoid busy-looping
 
 
-# ====================================================================== app
+# app
 
 class JiinApp(App):
     CSS_PATH = "app.tcss"
@@ -1313,7 +1313,7 @@ class JiinApp(App):
         # expose the palette to the stylesheet
         return {**super().get_theme_variable_defaults(), **textual_variables()}
 
-    # ---------- remembered preferences ----------
+    # remembered preferences
     def load_prefs(self) -> None:
         try:
             pr = json.loads((CONF_DIR / "prefs.json").read_text())
@@ -1343,7 +1343,7 @@ class JiinApp(App):
         except OSError:
             pass
 
-    # ---------- dev mode: restart on code changes ----------
+    # dev mode: restart on code changes
     @staticmethod
     def _scan_py() -> float:
         return max((p.stat().st_mtime for p in Path(__file__).parent.glob("*.py")), default=0.0)
@@ -1425,7 +1425,7 @@ class JiinApp(App):
     def action_help(self) -> None:
         self.push_screen(TextView("JIINSEC terminal - keys", Text.from_markup(HELP)))
 
-    # ---------- shared helpers used by every pane ----------
+    # shared helpers used by every pane
     def user(self, ref: dict | None) -> dict:
         ref = ref or {}
         out = {"roles": [], "hb": []}

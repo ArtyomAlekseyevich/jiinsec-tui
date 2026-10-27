@@ -78,7 +78,7 @@ class ForumsPane(Widget):
             self.loaded = True
             self.load_forums()
 
-    # ---------- directory ----------
+    # directory
     @work(exclusive=True, group="fdir")
     async def load_forums(self) -> None:
         qs = urlencode({"q": "", "cat": "", "sort": self.fsort, "page": self.fpage, "mine": 0, "deleted": 0})
@@ -125,7 +125,7 @@ class ForumsPane(Widget):
             self.open_forum(int(oid[1:]))
             self.query_one("#threadlist").focus()
 
-    # ---------- thread list ----------
+    # thread list
     @work(exclusive=True, group="tlist")
     async def open_forum(self, fid: int) -> None:
         self.fid = fid
@@ -184,7 +184,7 @@ class ForumsPane(Widget):
         if oid.startswith("t"):
             self.app.push_screen(ThreadScreen(int(oid[1:])), lambda _: self.fid and self.open_forum(self.fid))
 
-    # ---------- actions ----------
+    # actions
     def action_refresh(self) -> None:
         self.load_forums()
         if self.fid:

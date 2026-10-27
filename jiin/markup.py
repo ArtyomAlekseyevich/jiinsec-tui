@@ -12,7 +12,7 @@ RED = f"{C.accent}"
 DIM = f"{C.muted}"
 LINK = f"{C.link}"
 
-# ---------------------------------------------------------------- time
+# time
 
 def ago(t: float | None) -> str:
     if not t:
@@ -37,9 +37,6 @@ def full(t: float | None) -> str:
     return datetime.fromtimestamp(float(t or 0)).strftime("%d %b %Y %H:%M") if t else ""
 
 
-# ---------------------------------------------------------------- forum markup
-# Block: ``` fences, [center]/[right], #/##/### headings, > quotes, - * • bullets, 1. 1) lists.
-# Inline: `code`, **bold**, __underline__, ~~strike~~, *italic*, [[word]], [text](url), bare urls, \ escapes.
 
 _INL = re.compile(
     r"(?P<esc>\\[\\`*_~\[\]#>.\-)•])"

@@ -43,7 +43,7 @@ class Http:
     def has_device_cookie(self) -> bool:
         return any(c.name == "jdid" for c in self.client.cookies.jar)
 
-    # ---------- cookies ----------
+    # cookies
     def _load_cookies(self) -> None:
         try:
             data = json.loads(SESSION_FILE.read_text())
@@ -70,7 +70,7 @@ class Http:
         except OSError:
             pass
 
-    # ---------- requests ----------
+    # requests
     async def j(self, url: str, body: Any = None, *, method: str | None = None, retries: int | None = None,
                 timeout: float | None = None) -> Any:
         # body given -> POST JSON, else GET. API errors come back as {"error": ...}; 401 -> SignedOut.

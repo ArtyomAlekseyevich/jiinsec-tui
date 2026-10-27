@@ -65,7 +65,7 @@ class Report:
         return f"This file contains {t}."
 
 
-# ---------------------------------------------------------------- helpers
+# helpers
 
 def _s(v) -> str:
     if v is None:
@@ -126,7 +126,7 @@ def _uniq(*vals) -> str:
     return " / ".join(out)
 
 
-# ---------------------------------------------------------------- XMP
+# XMP
 
 def _xmp_packet(raw: bytes) -> str:
     a = raw.find(b"<x:xmpmeta")
@@ -166,7 +166,7 @@ def _xmp_gps(s: str) -> float | None:
     return -v if m[4] in "SW" else v
 
 
-# ---------------------------------------------------------------- JPEG structure
+# JPEG structure
 
 def _jpeg_segments(a: bytes):
     """Yield (marker, start, data_start, end) for header segments up to SOS; then ('SOS', pos)."""
@@ -285,7 +285,7 @@ def _png_chunks(a: bytes):
             return
 
 
-# ---------------------------------------------------------------- analysis
+# analysis
 
 def analyse(path: str | Path) -> Report:
     p = Path(path).expanduser()
@@ -329,7 +329,7 @@ def analyse(path: str | Path) -> Report:
 
     G = ExifTags.GPS
     B = ExifTags.Base
-    # ---- Location
+    # Location
     lat = lon = None
     if G.GPSLatitude in gps and G.GPSLongitude in gps:
         lat = _dms(gps[G.GPSLatitude], gps.get(G.GPSLatitudeRef, "N"))
@@ -368,7 +368,7 @@ def analyse(path: str | Path) -> Report:
             v, src = _xmp_get(xmp, xk), "XMP"
         add("Location", f"{label} ({src})", v, "A written place name tells people where you were without needing a map.", sev)
 
-    # ---- Device
+    # Device
     make, model = _s(base.get(B.Make)), _s(base.get(B.Model))
     add("Device", "Phone or camera", " ".join(x for x in (make, model) if x) or _xmp_get(xmp, "tiff:Model"),
         "Narrows down which device you own.", "low")
@@ -391,7 +391,7 @@ def analyse(path: str | Path) -> Report:
     if b"c2pa" in raw[:200000] and b"jumb" in raw[:200000]:
         add("Device", "Content Credentials (C2PA)", "Present", "A signed record of origin and edits; can name who made it.", "low")
 
-    # ---- Time
+    # Time
     off = _s(exif.get(B.OffsetTimeOriginal))
     dto = _s(exif.get(B.DateTimeOriginal))
     if dto:
@@ -415,7 +415,7 @@ def analyse(path: str | Path) -> Report:
     if ip(55):
         add("Time", "Date created (IPTC)", ip(55), "When the picture was created.", "med")
 
-    # ---- Embedded preview
+    # Embedded preview
     try:
         ifd1 = ex.get_ifd(ExifTags.IFD.IFD1)
     except Exception:  # noqa: BLE001
@@ -444,7 +444,7 @@ def analyse(path: str | Path) -> Report:
         else:
             add("Embedded preview", "Thumbnail in header", "present", "A small copy of the picture is stored in the file.", "low")
 
-    # ---- Other
+    # Other
     add("Other", "Author", _uniq(base.get(B.Artist), base.get(0x9C9D), _xmp_get(xmp, "dc:creator"), ip(80)), "A name that identifies who took it.", "high")
     add("Other", "Copyright", _uniq(base.get(B.Copyright), _xmp_get(xmp, "dc:rights"), ip(116)), "Often contains a real name or website.", "med")
     add("Other", "Credit / source", _uniq(_xmp_get(xmp, "photoshop:Credit"), ip(110), _xmp_get(xmp, "photoshop:Source"), ip(115)),

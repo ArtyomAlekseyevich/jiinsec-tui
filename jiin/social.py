@@ -99,7 +99,7 @@ class SocialPane(Widget):
         self.query_one("#dmlog").display = False
         self.query_one("#dmreply").display = False
 
-    # ---------- summary from /api/social ----------
+    # summary from /api/social
     def _list_ready(self) -> None:
         # an avatar in the conversation list loaded; redraw (debounced)
         if getattr(self, "_list_redraw", False):
@@ -242,7 +242,7 @@ class SocialPane(Widget):
         self.app.refresh_social()
         return r
 
-    # ---------- open a conversation ----------
+    # open a conversation
     def open_dm(self, uid: int) -> None:
         self.open = ("dm", uid)
         self.msgs, self.reply = [], None
@@ -486,7 +486,7 @@ class SocialPane(Widget):
         self._draw_msgs()
         self.query_one("#dmlog", OptionList).highlighted = 0
 
-    # ---------- message actions ----------
+    # message actions
     def on_key(self, event) -> None:
         log = self.query_one("#dmlog", OptionList)
         if not log.has_focus:
@@ -609,7 +609,7 @@ class SocialPane(Widget):
             self.app.push_screen(Choose("Which file?", [(str(k), f.get("name", "file")) for k, f in enumerate(files)], "0"),
                                  lambda v: v is not None and go(files[int(v)]))
 
-    # ---------- sending ----------
+    # sending
     @on(Input.Submitted, "#dmin")
     @on(Button.Pressed, "#dmsend")
     def _send(self) -> None:
@@ -675,7 +675,7 @@ class SocialPane(Widget):
             self.reply = None
             self._show_reply()
 
-    # ---------- new DM / group / friends ----------
+    # new DM / group / friends
     def action_new_dm(self) -> None:
         def done(v):
             if not v:

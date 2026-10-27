@@ -13,6 +13,7 @@ from rich.text import Text
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.css.query import NoMatches
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen, Screen
 from textual.suggester import Suggester
@@ -57,6 +58,7 @@ HELP = f"""\
   F7                   show / hide pictures inside messages (i on a message opens it full size)
   F8                   picture quality: real pixels (Kitty) / 2×2 / 2×3 / 1×2 pixels per character
   F9                   see-through background (shows your terminal's transparency, e.g. Kitty's)
+  Ctrl+P               plugins (turn features like the message logger on or off)
   F10                  log out          Ctrl+Q   quit
 
 [b {C.accent}]Global chat[/]
@@ -356,6 +358,8 @@ class ChatPane(Widget):
             await asyncio.sleep(3 * (1 + self.fail))
 
     async def poll(self) -> None:
+        if not self.is_mounted:          # app is shutting down
+            return
         q = f"/api/chat?since={self.last}"
         if self.dseq is not None:
             q += f"&dseq={self.dseq}"
@@ -385,6 +389,8 @@ class ChatPane(Widget):
             if not initial and m.get("ping") and m.get("uid") != me_id:
                 self.app.bell()
                 self.app.notify(f"{m.get('username')}: {self.app.plain(m.get('text') or '')[:120]}", title="You were mentioned")
+        if new:
+            self.app.plugins.call("chat_received", self, new)
         trimmed = False
         while len(self.msgs) > 300:
             self.msgs.pop(0)
@@ -397,14 +403,23 @@ class ChatPane(Widget):
                 log.highlighted = log.option_count - 1
         if r.get("deleted"):
             gone = set(r["deleted"])
-            if any(m["id"] in gone for m in self.msgs):
-                self.msgs = [m for m in self.msgs if m["id"] not in gone]
+            keep = self.app.plugins.reduce("chat_keep_deleted", set(), self, gone)   # a plugin may keep some visible
+            ids_here = {m["id"] for m in self.msgs}
+            touched = bool(keep & ids_here)
+            for m in self.msgs:
+                if m["id"] in keep:
+                    m["_deleted"] = True
+            remove = gone - keep
+            if remove & ids_here:
+                self.msgs = [m for m in self.msgs if m["id"] not in remove]
                 for m in self.msgs:
-                    if (m.get("reply") or {}).get("id") in gone:
+                    if (m.get("reply") or {}).get("id") in remove:
                         m["reply"]["gone"] = True
-                if self.reply and self.reply["id"] in gone:
+                if self.reply and self.reply["id"] in remove:
                     self.set_reply(None)
                     self.note("The message you were replying to was deleted")
+                touched = True
+            if touched:
                 self.redraw()
         if isinstance(r.get("dseq"), int):
             self.dseq = r["dseq"]
@@ -443,7 +458,10 @@ class ChatPane(Widget):
                 return
 
     def redraw(self) -> None:
-        log = self.query_one("#chatlog", OptionList)
+        try:
+            log = self.query_one("#chatlog", OptionList)
+        except NoMatches:
+            return
         hi = log.highlighted_option.id if log.highlighted_option else None
         log.clear_options()
         prev = None
@@ -497,10 +515,15 @@ class ChatPane(Widget):
             for x in rx:
                 t.append(f" {self.app.emoji_label(x.get('e'))} {x.get('n', 0)} ", style=f"on {C.sel_strong}" if x.get("me") else f"on {C.code_bg}")
                 t.append(" ")
+        if m.get("_deleted"):
+            t.append("\n")
+            t.append("🗑 deleted", style=f"bold {C.err}")
         if pics.enabled:
             av = "" if grp else pics.avatar(m.get("uid"), m.get("av"), m.get("username", ""), 10, 5, on_ready=redraw)
-            return with_avatar(av, t, 10, f"on {C.ping_bg}" if m.get("ping") else None)
-        return indent(t, "▌ " if m.get("ping") else "  ", f"{C.warn}")
+            row = f"on {C.del_bg}" if m.get("_deleted") else (f"on {C.ping_bg}" if m.get("ping") else None)
+            return with_avatar(av, t, 10, row)
+        bar = "▌ " if (m.get("ping") or m.get("_deleted")) else "  "
+        return indent(t, bar, C.err if m.get("_deleted") else C.warn)
 
     # composer state
     def show_state(self) -> None:
@@ -1003,6 +1026,33 @@ class ProfileScreen(ModalScreen[None]):
         self.load()
 
 
+class PluginsScreen(ModalScreen[None]):
+    BINDINGS = [Binding("escape,q", "dismiss(None)", "Close")]
+
+    def compose(self) -> ComposeResult:
+        with Vertical(classes="dialog"):
+            yield Label("Plugins", classes="title")
+            with VerticalScroll():
+                plugins = self.app.plugins.all
+                if not plugins:
+                    yield Static("No plugins installed.", classes="meta")
+                for p in plugins:
+                    yield Checkbox(p.name, value=p.name in self.app.plugins.enabled, id=f"pl-{p.name}")
+                    yield Static(p.description, classes="meta")
+            with Horizontal(classes="row"):
+                yield Button("Close", id="plclose")
+
+    @on(Checkbox.Changed)
+    def _toggle(self, e: Checkbox.Changed) -> None:
+        self.app.plugins.set_enabled(e.control.id[3:], e.value)
+        self.app.save_prefs()
+        if self.app.main:
+            self.app.main.query_one("#chatpane", ChatPane).redraw()
+
+    def on_button_pressed(self, e: Button.Pressed) -> None:
+        self.dismiss(None)
+
+
 # main screen
 
 TABS = [("chat", "Chat"), ("dms", "Messages"), ("forums", "Forums"), ("news", "News"), ("img", "Image Data")]
@@ -1017,6 +1067,7 @@ class MainScreen(Screen):
         Binding("f5", "tab('news')", "News"),
         Binding("f6", "tab('img')", "Image Data"),
         Binding("ctrl+b", "toggle_members", "Members"),
+        Binding("ctrl+p", "plugins", "Plugins"),
         Binding("f7", "toggle_pics", "Pictures"),
         Binding("f8", "pic_mode", "Sharpness"),
         Binding("f9", "toggle_transparent", "See-through"),
@@ -1081,6 +1132,9 @@ class MainScreen(Screen):
     def _tab(self, e: TabbedContent.TabActivated) -> None:
         if e.pane.id == "chat":
             self.call_after_refresh(lambda: self.query_one("#cin").focus())
+
+    def action_plugins(self) -> None:
+        self.app.push_screen(PluginsScreen())
 
     def action_toggle_members(self) -> None:
         self.query_one("#members").toggle_class("hidden")
@@ -1275,6 +1329,9 @@ class JiinApp(App):
         self.pics = Pictures(self.api.http.raw)
         from .pictures import KITTY
         self.transparent = KITTY          # transparent by default in kitty
+        from .plugins import PluginManager
+        self.plugins = PluginManager(self)
+        self.plugins.discover()
         self.load_prefs()
         self.me: dict = {}
         self.members: dict[int, dict] = {}
@@ -1318,6 +1375,7 @@ class JiinApp(App):
         try:
             pr = json.loads((CONF_DIR / "prefs.json").read_text())
         except (OSError, ValueError):
+            self.plugins.load(None)       # first run: defaults
             return
         from .pictures import KITTY, MODE_ORDER
         # kitty and text-only terminals remember their mode separately
@@ -1327,6 +1385,7 @@ class JiinApp(App):
         self.transparent = pr.get("transparent", KITTY) if KITTY else pr.get("transparent", False)
         if pr.get("pics") is False:
             self.pics.enabled = False
+        self.plugins.load(pr.get("plugins"))
 
     def save_prefs(self) -> None:
         try:
@@ -1339,6 +1398,7 @@ class JiinApp(App):
             pr["pic_mode_kitty" if KITTY else "pic_mode"] = self.pics.mode
             pr["pics"] = self.pics.enabled
             pr["transparent"] = self.transparent
+            pr["plugins"] = sorted(self.plugins.enabled)
             (CONF_DIR / "prefs.json").write_text(json.dumps(pr))
         except OSError:
             pass

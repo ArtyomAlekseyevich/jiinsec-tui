@@ -132,3 +132,6 @@ App.-transparent .dialog, App.-transparent .dialog Horizontal, App.-transparent 
 App.-transparent .dialog VerticalScroll, App.-transparent #loginbox, App.-transparent #loginbox Vertical,
 App.-transparent #loginbox Horizontal, App.-transparent #lsw { background: $jx-surface; }
 App.-transparent ModalScreen { background: #000000 70%; }
+
+.dialog Checkbox { background: transparent; border: none; margin: 1 0 0 0; padding: 0; }
+.dialog Checkbox:focus > .toggle--label { text-style: none; }

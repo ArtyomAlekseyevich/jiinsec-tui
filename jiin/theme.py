@@ -118,6 +118,7 @@ def _build() -> SimpleNamespace:
         btn=mix(bg, acc, 0.16), btn_hover=mix(bg, acc, 0.26),
         # fixed status colours
         ok="#39ff88", warn="#ffb020", err="#ff5b6b", music="#b07cff", ping_bg=mix(bg, "#ffb020", 0.10),
+        del_bg=mix(bg, "#ff5b6b", 0.13),
     )
     return C
 

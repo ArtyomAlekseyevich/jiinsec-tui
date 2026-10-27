@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# jiinsec            run
+# jiinsec --dev      live reload while editing
+# jiinsec --offline  run against the local mock server
+set -e
+DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+PY="$DIR/.venv/bin/python"
+# set up the venv on first run
+if [ ! -x "$PY" ] || ! "$PY" -c "import textual, httpx, PIL, textual_image" 2>/dev/null; then
+  echo "First run: installing dependencies into $DIR/.venv …"
+  python3 -m venv "$DIR/.venv"
+  "$DIR/.venv/bin/pip" install -q --disable-pip-version-check -r "$DIR/requirements.txt"
+fi
+cd "$DIR"
+MOD=jiin.app
+if [ "$1" = "--offline" ]; then shift; MOD=jiin.offline; fi
+# exit 3 means restart (theme change, or code change in --dev)
+while true; do
+  rc=0
+  "$PY" -m "$MOD" "$@" || rc=$?
+  [ "$rc" = 3 ] && continue
+  [ "$rc" = 0 ] && exit 0
+  if [ "$1" != "--dev" ]; then exit "$rc"; fi
+  echo
+  echo "Stopped with exit $rc. Waiting for a code change to restart (Ctrl+C to quit)."
+  marker="$(mktemp)"
+  until [ -n "$(find jiin -name '*.py' -newer "$marker" -print -quit)" ]; do sleep 0.5; done
+  rm -f "$marker"
+done

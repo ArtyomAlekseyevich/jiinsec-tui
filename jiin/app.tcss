@@ -1,0 +1,134 @@
+/* JIINSEC terminal theme: blood red on near-black, like the site */
+Screen { background: $jx-bg; color: $jx-fg; }
+
+#topbar { height: 1; background: $jx-surface; color: $jx-fg; padding: 0 1; }
+#topbar .brand { color: $jx-accent; text-style: bold; width: auto; }
+#topbar .sub { color: $jx-muted; width: auto; margin-left: 1; }
+#topbar #who { width: 1fr; content-align: right middle; color: $jx-muted; }
+
+TabbedContent { height: 1fr; width: 1fr; }
+TabbedContent > ContentSwitcher { height: 1fr; }
+TabPane { height: 1fr; }
+ChatPane, SocialPane, ForumsPane, NewsPane, ImagePane { height: 1fr; width: 1fr; }
+SocialPane > Horizontal, ForumsPane > Horizontal { height: 1fr; }
+Tabs { background: $jx-bg-alt; }
+Tab { color: $jx-muted; }
+Tab.-active { color: $jx-accent; text-style: bold; }
+Underline > .underline--bar { color: $jx-border; background: $jx-code-bg; }
+TabPane { padding: 0; }
+
+.panel-title { height: 1; color: $jx-accent; text-style: bold; padding: 0 1; background: $jx-surface; }
+.meta { color: $jx-muted; }
+.muted { color: $jx-muted; padding: 0 1; }
+.err { color: $jx-err; }
+.ok { color: $jx-ok; }
+
+Input { background: $jx-input; border: tall $jx-border; color: $jx-fg-bright; }
+Input:focus { border: tall $jx-accent; }
+Input > .input--placeholder { color: $jx-faint; }
+Button { background: $jx-sel; color: $jx-fg-bright; border: tall $jx-border; min-width: 8; }
+Button:hover { background: $jx-sel-strong; }
+Button:focus { border: tall $jx-accent; text-style: bold; }
+Button.-primary { background: $jx-accent; color: $jx-on-accent; border: tall $jx-accent; }
+
+OptionList { background: $jx-bg; border: none; scrollbar-color: $jx-border; scrollbar-background: $jx-bg-alt; }
+OptionList:focus { border: none; background-tint: $jx-accent 3%; }
+OptionList > .option-list--option-highlighted { background: $jx-sel; }
+OptionList:focus > .option-list--option-highlighted { background: $jx-sel-strong; }
+OptionList > .option-list--separator { color: $jx-inactive; }
+
+/* ---------- login ---------- */
+LoginScreen { align: center middle; }
+#loginbox { width: 60; height: auto; border: heavy $jx-border; background: $jx-surface; padding: 1 3; }
+#logo { color: $jx-accent; text-style: bold; content-align: center middle; width: 100%; height: auto; }
+#tag { content-align: center middle; width: 100%; color: $jx-muted; margin-bottom: 1; }
+#loginbox Input { margin-bottom: 1; }
+#loginbox Button { width: 100%; margin-top: 1; }
+#loginmsg { height: auto; margin-top: 1; }
+#lsw, #lsw > Vertical { height: auto; }
+#logosmall { display: none; content-align: center middle; width: 100%; margin-bottom: 1; }
+LoginScreen.short #logo, LoginScreen.short #tag { display: none; }
+LoginScreen.short #logosmall { display: block; }
+LoginScreen.short #loginbox { padding: 0 3; }
+LoginScreen.short #loginbox Input { margin-bottom: 0; }
+LoginScreen.short #loginbox Button { margin-top: 0; }
+#loginbox .row { height: auto; }
+#tosbox Checkbox { background: transparent; border: none; }
+
+/* ---------- main ---------- */
+#body { height: 1fr; }
+#members { width: 34; border-left: solid $jx-inactive; background: $jx-bg; }
+#members.hidden { display: none; }
+#memlist { height: 1fr; }
+
+#chatpane { width: 1fr; }
+#chatlog { height: 1fr; }
+#typing { height: 1; color: $jx-muted; padding: 0 1; }
+#replybar { height: auto; color: $jx-warn; padding: 0 1; background: $jx-code-bg; }
+#chatnote { height: auto; color: $jx-warn; padding: 0 1; }
+.composer { height: 3; }
+.composer Input { width: 1fr; }
+.composer Button { width: 10; }
+
+#dmside { width: 38; border-right: solid $jx-inactive; }
+#dmconvs { height: 1fr; }
+#dmhead { height: 1; }
+#dmlog { height: 1fr; }
+#dmempty { padding: 2 4; color: $jx-muted; }
+
+#fmside { width: 34; border-right: solid $jx-inactive; }
+#forumlist { height: 1fr; }
+#threadlist { height: 1fr; }
+#fmbar { height: 3; }
+#fmbar Button { margin-right: 1; }
+#fmpager { width: 1fr; content-align: right middle; color: $jx-muted; }
+
+#newsview { padding: 0 2; }
+MarkdownViewer, Markdown { background: $jx-bg; }
+
+/* ---------- image data ---------- */
+#imgform { height: 3; }
+#imgpath { width: 1fr; }
+#imgbody { height: 1fr; }
+#imgprev { width: auto; min-width: 20; max-width: 52; padding: 0 1; }
+#imgfind { width: 1fr; padding: 0 1; }
+#imgsum { padding: 0 1; height: auto; }
+
+/* ---------- modals ---------- */
+ModalScreen { background: #000000 70%; align: center middle; }
+.dialog { width: 80%; max-width: 100; height: auto; max-height: 90%; background: $jx-surface; border: heavy $jx-border; padding: 1 2; }
+.dialog .title { color: $jx-accent; text-style: bold; margin-bottom: 1; }
+.dialog .row { height: auto; margin-top: 1; }
+.dialog .row Button { margin-right: 1; }
+.dialog VerticalScroll { height: auto; max-height: 30; }
+#emojigrid { height: auto; }
+#emojigrid Button { min-width: 6; width: 6; margin: 0 1 0 0; }
+
+ThreadScreen { background: $jx-bg; }
+#postlog { height: 1fr; }
+#threadhead { height: auto; padding: 0 1; background: $jx-surface; }
+
+ImageViewScreen .dialog { width: auto; max-width: 100%; }
+#phead { height: auto; }
+#pbanner { height: auto; margin-bottom: 1; }
+#pavatar { width: auto; height: auto; margin-right: 2; }
+#pbody { width: 1fr; height: auto; }
+ImageView .dialog { width: auto; min-width: 40; max-width: 100%; align-horizontal: center; }
+#pic { width: auto; height: auto; }
+#picbig { width: auto; height: auto; }
+
+/* ---------- see-through mode (F9): big areas use the terminal's own background, so its transparency shows ---------- */
+App.-transparent Screen, App.-transparent #body, App.-transparent TabbedContent, App.-transparent ContentSwitcher,
+App.-transparent TabPane, App.-transparent Tabs, App.-transparent OptionList, App.-transparent #members,
+App.-transparent VerticalScroll, App.-transparent #newsview, App.-transparent #imgbody, App.-transparent #imgfind,
+App.-transparent #topbar, App.-transparent Footer, App.-transparent MarkdownViewer, App.-transparent Markdown,
+App.-transparent ChatPane, App.-transparent SocialPane, App.-transparent ForumsPane, App.-transparent NewsPane,
+App.-transparent ImagePane, App.-transparent Horizontal, App.-transparent Vertical, App.-transparent LoginScreen,
+App.-transparent ThreadScreen, App.-transparent #typing, App.-transparent #imgprev, App.-transparent #imgsum {
+    background: ansi_default;
+}
+App.-transparent OptionList:focus { background-tint: transparent; }
+App.-transparent .dialog, App.-transparent .dialog Horizontal, App.-transparent .dialog Vertical,
+App.-transparent .dialog VerticalScroll, App.-transparent #loginbox, App.-transparent #loginbox Vertical,
+App.-transparent #loginbox Horizontal, App.-transparent #lsw { background: $jx-surface; }
+App.-transparent ModalScreen { background: #000000 70%; }
